@@ -1,0 +1,38 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - dev  # 当推送到 dev 分支时触发
+  pull_request:
+    branches:
+      - main  # 当 PR 合并到 main 分支时触发
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3  # 拉取代码
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2  # 设置 Terraform 环境
+      with:
+        terraform_version: 1.5.0  # 指定 Terraform 版本
+
+    - name: Initialize Terraform
+      run: terraform init  # 初始化 Terraform
+
+    - name: Validate Terraform files
+      run: terraform validate  # 验证 Terraform 代码是否正确
+
+    - name: Plan Terraform changes
+      run: terraform plan -out=tfplan  # 规划 Terraform 变更
+
+    - name: Apply Terraform changes
+      if: github.ref == 'refs/heads/main'  # 仅在 main 分支应用
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: terraform apply -auto-approve tfplan  # 自动批准并应用变更
