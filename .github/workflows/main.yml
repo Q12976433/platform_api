@@ -6,7 +6,7 @@ on:
       - dev  # 当推送到 dev 分支时触发
   pull_request:
     branches:
-      - main  # 当 PR 合并到 main 分支时触发
+      - dev  # 当 PR 合并到 main 分支时触发
 
 jobs:
   terraform:
