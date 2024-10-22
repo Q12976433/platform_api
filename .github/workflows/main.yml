@@ -35,4 +35,4 @@ jobs:
     - name: Initialize Terraform
       run: terraform init  # 初始化 Terraform
     - name: tf plan
-      run: terraform apply -auto-approve
+      run: terraform destroy -auto-approve
