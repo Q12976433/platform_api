@@ -1,0 +1,36 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - DevOps/update-devops-email-service  # 当推送到 dev 分支时触发
+      
+  #pull_request:
+   # branches:
+    #  - dev  # 当 PR 合并到 main 分支时触
+jobs:
+  aws-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1  # 替换为你使用的区域
+
+    - name: Verify AWS credentials
+      run: aws sts get-caller-identity
+
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2  # 配置 Terraform
+      with:
+        terraform_version: 1.5.0  # 指定 Terraform 版本
+
+    - name: Initialize Terraform
+      run: terraform init  # 初始化 Terraform
