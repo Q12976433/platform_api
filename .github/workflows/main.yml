@@ -36,26 +36,16 @@ jobs:
       run: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 
-    - name: Build Docker image
+    - name: Build, Tag, and Push Image to Amazon ECR
       env:
-        IMAGE_TAG: "${{ github.sha }}"
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: repo
+        IMAGE_TAG: latest
       run: |
-        docker build -t test1:${IMAGE_TAG} .
-
-    - name: Tag Docker image
-      env:
-        IMAGE_TAG: "${{ github.sha }}"
-        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
-      run: |
-        docker tag test1:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
-
-    - name: Push Docker image to ECR
-      env:
-        IMAGE_TAG: "${{ github.sha }}"
-        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
-      run: |
-        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
-
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Image Digest
+      run: echo ${{ steps.build-and-push.outputs.digest }}
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
       with:
