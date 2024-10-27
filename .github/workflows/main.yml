@@ -26,6 +26,7 @@ jobs:
     - name: Verify AWS credentials
       run: aws sts get-caller-identity
 
+
     - name: Build Docker image
       run: |
         IMAGE_TAG="${{ github.sha }}"
