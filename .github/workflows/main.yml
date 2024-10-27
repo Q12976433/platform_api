@@ -35,7 +35,7 @@ jobs:
     - name: Tag Docker image
       run: |
         IMAGE_TAG="${{ github.sha }}"
-        docker tag test1:${IMAGE_TAG} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
+        docker tag ${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
 
     - name: Push Docker image to ECR
       run: |
