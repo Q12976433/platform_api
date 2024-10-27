@@ -58,4 +58,4 @@ jobs:
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
-      w
+
