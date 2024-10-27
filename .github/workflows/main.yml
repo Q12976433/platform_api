@@ -25,6 +25,12 @@ jobs:
 
     - name: Verify AWS credentials
       run: aws sts get-caller-identity
+      
+    - name: Get AWS Account ID
+      id: aws_account
+      run: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+        echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
 
 
     - name: Build Docker image
