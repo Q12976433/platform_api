@@ -33,9 +33,12 @@ jobs:
         docker build -t test1:${IMAGE_TAG} .
 
     - name: Tag Docker image
+      env:
+        IMAGE_TAG: "${{ github.sha }}"
+        AWS_ACCOUNT_ID: "${{ secrets.AWS_ACCOUNT_ID }}"  # Make sure this secret is set in GitHub
       run: |
-        IMAGE_TAG="${{ github.sha }}"
-        docker tag ${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
+        docker tag test1:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
+
 
     - name: Push Docker image to ECR
       run: |
