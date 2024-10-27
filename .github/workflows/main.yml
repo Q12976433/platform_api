@@ -29,12 +29,12 @@ jobs:
         ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
         echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
         echo "Retrieved AWS Account ID: $ACCOUNT_ID"  # For debugging purposes
-
-    - name: Log in to Amazon ECR
-      env:
-        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
-      run: |
-        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Test AWS CLI Command
+      run: 
+        aws ecr describe-repositories
 
     - name: Build, Tag, and Push Image to Amazon ECR
       env:
