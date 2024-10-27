@@ -3,11 +3,8 @@ name: Terraform CI/CD
 on:
   push:
     branches:
-      - DevOps/update-devops-email-service  # 当推送到 dev 分支时触发
-      
-  #pull_request:
-   # branches:
-    #  - dev  # 当 PR 合并到 main 分支时触
+      - DevOps/update-devops-email-service  # Trigger on push to this branch
+
 jobs:
   aws-verify:
     runs-on: ubuntu-latest
@@ -21,18 +18,21 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1  # 替换为你使用的区域
+        aws-region: us-east-1  # Replace with your region
 
     - name: Verify AWS credentials
       run: aws sts get-caller-identity
-      
+
     - name: Get AWS Account ID
       id: aws_account
       run: |
         ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
         echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
-        echo "Retrieved AWS Account ID: $ACCOUNT_ID"  # For debugging
+        echo "Retrieved AWS Account ID: $ACCOUNT_ID"  # For debugging purposes
 
+    - name: Confirm AWS Account ID
+      run: |
+        echo "AWS_ACCOUNT_ID is set to: $AWS_ACCOUNT_ID"
 
     - name: Build Docker image
       env:
@@ -43,23 +43,19 @@ jobs:
     - name: Tag Docker image
       env:
         IMAGE_TAG: "${{ github.sha }}"
+        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"  # Explicitly setting the environment variable
       run: |
         echo "Image Tag: ${IMAGE_TAG}"
-        echo "Account ID from Environment: ${{ env.AWS_ACCOUNT_ID }}"  # Double-check AWS_ACCOUNT_ID value
-        docker tag test1:${IMAGE_TAG} ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
-
-
+        echo "Account ID from Environment: ${AWS_ACCOUNT_ID}"  # Double-check AWS_ACCOUNT_ID value
+        docker tag test1:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
 
     - name: Push Docker image to ECR
+      env:
+        IMAGE_TAG: "${{ github.sha }}"
+        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
       run: |
-        IMAGE_TAG="${{ github.sha }}"
-        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2  # 配置 Terraform
-      with:
-        terraform_version: 1.5.0  # 指定 Terraform 版本
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
 
-    - name: Initialize Terraform
-      run: terraform init  # 初始化 Terraform
-    #- name: tf plan
-     # run: terraform destroy -auto-approve
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+      w
