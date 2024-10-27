@@ -30,9 +30,11 @@ jobs:
         echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
         echo "Retrieved AWS Account ID: $ACCOUNT_ID"  # For debugging purposes
 
-    - name: Confirm AWS Account ID
+    - name: Log in to Amazon ECR
+      env:
+        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
       run: |
-        echo "AWS_ACCOUNT_ID is set to: $AWS_ACCOUNT_ID"
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 
     - name: Build Docker image
       env:
@@ -43,10 +45,8 @@ jobs:
     - name: Tag Docker image
       env:
         IMAGE_TAG: "${{ github.sha }}"
-        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"  # Explicitly setting the environment variable
+        AWS_ACCOUNT_ID: "${{ env.AWS_ACCOUNT_ID }}"
       run: |
-        echo "Image Tag: ${IMAGE_TAG}"
-        echo "Account ID from Environment: ${AWS_ACCOUNT_ID}"  # Double-check AWS_ACCOUNT_ID value
         docker tag test1:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
 
     - name: Push Docker image to ECR
@@ -58,4 +58,8 @@ jobs:
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
 
+    - name: Initialize Terraform
+      run: terraform init
