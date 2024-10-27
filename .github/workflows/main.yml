@@ -31,6 +31,7 @@ jobs:
       run: |
         ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
         echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+        echo "Retrieved AWS Account ID: $ACCOUNT_ID"  # For debugging
 
 
     - name: Build Docker image
@@ -41,7 +42,7 @@ jobs:
     - name: Tag Docker image
       env:
         IMAGE_TAG: "${{ github.sha }}"
-        AWS_ACCOUNT_ID: "${{ secrets.AWS_ACCOUNT_ID }}"  # Make sure this secret is set in GitHub
+      #  AWS_ACCOUNT_ID: "${{ secrets.AWS_ACCOUNT_ID }}"  # Make sure this secret is set in GitHub
       run: |
         docker tag test1:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/test1:${IMAGE_TAG}
 
